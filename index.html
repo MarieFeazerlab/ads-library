@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Library - Feazer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #111;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            padding-bottom: 1rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: #4b5563;
+        }
+
+        .filter-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .gallery {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .ad-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .ad-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .ad-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .ad-info {
+            padding: 1.25rem;
+        }
+
+        .ad-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #111;
+        }
+
+        .ad-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.35rem 0.75rem;
+            background: #f3f4f6;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .lightbox-info {
+            background: white;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -3rem;
+            right: 0;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .filters {
+                gap: 0.5rem;
+            }
+
+            .filter-btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Ads Library</h1>
+            <p class="subtitle">Inspirez-vous des meilleures créations publicitaires</p>
+            
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Toutes</button>
+                <button class="filter-btn" data-filter="Split Screen">Split Screen</button>
+                <button class="filter-btn" data-filter="Problème/Solution">Problème/Solution</button>
+                <button class="filter-btn" data-filter="Before/After">Before/After</button>
+                <button class="filter-btn" data-filter="UGC">UGC</button>
+                <button class="filter-btn" data-filter="Testimonial">Testimonial</button>
+                <button class="filter-btn" data-filter="Product Demo">Product Demo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="gallery" id="gallery"></div>
+        <div class="no-results" id="noResults" style="display: none;">
+            Aucune publicité ne correspond à ce filtre.
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="close-btn" id="closeBtn">×</button>
+            <img src="" alt="" class="lightbox-image" id="lightboxImage">
+            <div class="lightbox-info">
+                <h2 class="ad-title" id="lightboxTitle"></h2>
+                <div class="ad-tags" id="lightboxTags"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === CONFIGURATION : Ajoute tes pubs ici ===
+        const ads = [
+            {
+                id: 1,
+                image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800",
+                title: "Exemple Pub 1 - Split Screen",
+                tags: ["Split Screen", "Product Demo"]
+            },
+            {
+                id: 2,
+                image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800",
+                title: "Exemple Pub 2 - Problème/Solution",
+                tags: ["Problème/Solution", "UGC"]
+            },
+            {
+                id: 3,
+                image: "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=800",
+                title: "Exemple Pub 3 - Before/After",
+                tags: ["Before/After", "Testimonial"]
+            },
+            {
+                id: 4,
+                image: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800",
+                title: "Exemple Pub 4 - UGC Style",
+                tags: ["UGC", "Split Screen"]
+            },
+            {
+                id: 5,
+                image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800",
+                title: "Exemple Pub 5 - Product Focus",
+                tags: ["Product Demo", "Testimonial"]
+            },
+            {
+                id: 6,
+                image: "https://images.unsplash.com/photo-1611162616528-5d2e0470b00b?w=800",
+                title: "Exemple Pub 6 - Social Proof",
+                tags: ["Testimonial", "Before/After"]
+            }
+        ];
+
+        // === CODE (ne pas modifier) ===
+        let currentFilter = 'all';
+
+        function renderGallery(filter = 'all') {
+            const gallery = document.getElementById('gallery');
+            const noResults = document.getElementById('noResults');
+            
+            const filteredAds = filter === 'all' 
+                ? ads 
+                : ads.filter(ad => ad.tags.includes(filter));
+
+            if (filteredAds.length === 0) {
+                gallery.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            gallery.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            gallery.innerHTML = filteredAds.map(ad => `
+                <div class="ad-card" onclick="openLightbox(${ad.id})">
+                    <img src="${ad.image}" alt="${ad.title}" class="ad-image">
+                    <div class="ad-info">
+                        <h3 class="ad-title">${ad.title}</h3>
+                        <div class="ad-tags">
+                            ${ad.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openLightbox(adId) {
+            const ad = ads.find(a => a.id === adId);
+            document.getElementById('lightboxImage').src = ad.image;
+            document.getElementById('lightboxTitle').textContent = ad.title;
+            document.getElementById('lightboxTags').innerHTML = 
+                ad.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        // Event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderGallery(currentFilter);
+            });
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) closeLightbox();
+        });
+
+        // Escape key to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Initial render
+        renderGallery();
+    </script>
+</body>
+</html>
